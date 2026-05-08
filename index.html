@@ -1,9 +1,154 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NutriCiencia · Dashboard Comercial</title>
+<style>
+:root{--bg:#0f0f14;--s1:#161620;--s2:#1e1e2a;--bd:#28283a;--tx:#e0e0f0;--mt:#686882;--am:#f5a623;--gr:#22c55e;--rd:#ef4444;--bl:#60a5fa;--pu:#a78bfa;--te:#2dd4bf;--mono:'Courier New',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-height:100vh;padding:20px 14px 52px}
+input,select,button{font-family:var(--sans);font-size:14px;outline:none}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
 
-// Your web app's Firebase configuration
+/* LOGIN */
+.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;gap:20px}
+.login-box{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:32px 28px;width:100%;max-width:360px}
+.login-logo{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--am);margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--mt);margin-bottom:24px}
+.login-label{font-size:11px;color:var(--mt);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:block}
+.login-inp{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;color:var(--tx);font-family:var(--mono);font-size:15px;margin-bottom:14px;transition:border-color .2s}
+.login-inp:focus{border-color:var(--am)}
+.login-btn{width:100%;padding:11px;background:var(--am);color:#000;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;transition:filter .2s}
+.login-btn:hover{filter:brightness(1.1)}
+.login-err{color:var(--rd);font-size:12px;text-align:center;margin-top:8px;min-height:18px}
+
+/* LAYOUT */
+.app{max-width:900px;margin:0 auto}
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:16px;border-bottom:1px solid var(--bd);margin-bottom:18px}
+.hdr-l .ey{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:3px}
+.hdr-l .ti{font-family:var(--mono);font-size:20px}
+.hdr-r{text-align:right}
+.hdr-r .lb{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:2px}
+.hdr-r .ne{font-family:var(--mono);font-size:11px;color:var(--mt)}
+.hdr-r .to{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--am)}
+.logout{font-size:11px;color:var(--mt);background:none;border:1px solid var(--bd);border-radius:5px;padding:3px 9px;cursor:pointer;margin-top:6px;transition:color .15s,border-color .15s}
+.logout:hover{color:var(--rd);border-color:var(--rd)}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.pt{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.pt .d{width:5px;height:5px;border-radius:50%;background:var(--dc,var(--am));flex-shrink:0}
+
+/* KPIS */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}
+@media(max-width:600px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--s1);border:1px solid var(--bd);border-top:2px solid var(--kc,var(--bd));border-radius:10px;padding:12px}
+.kpi .kl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);margin-bottom:5px}
+.kpi .kv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--kc,var(--tx));line-height:1}
+.kpi .ks{font-size:11px;color:var(--mt);margin-top:4px}
+
+/* PROGRESS */
+.prog-wrap{margin-bottom:8px}
+.prog-top{display:flex;justify-content:space-between;margin-bottom:5px}
+.prog-lb{font-size:11px;color:var(--mt)}
+.prog-pct{font-family:var(--mono);font-size:13px;font-weight:700}
+.track{height:7px;background:var(--s2);border-radius:99px;position:relative;overflow:hidden}
+.track-fill{height:100%;border-radius:99px;transition:width .6s}
+.track-pace{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.3)}
+.alrt{padding:8px 11px;border-radius:7px;font-size:12px;margin-top:9px;border:1px solid}
+.alrt.ok{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3);color:#4ade80}
+.alrt.wn{background:rgba(245,166,35,.08);border-color:rgba(245,166,35,.3);color:#fbbf24}
+.alrt.bd{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#f87171}
+
+/* INPUTS */
+.fg{margin-bottom:10px}
+.fg label{font-size:11px;color:var(--mt);display:block;margin-bottom:4px}
+.inp{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;color:var(--tx);font-family:var(--mono);font-size:13px;transition:border-color .2s}
+.inp:focus{border-color:var(--am)}
+.btn-p{width:100%;padding:9px;background:var(--am);color:#000;border:none;border-radius:7px;font-weight:700;font-size:13px;cursor:pointer;transition:filter .2s;margin-bottom:4px}
+.btn-p:hover{filter:brightness(1.1)}
+.btn-s{width:100%;padding:8px;background:var(--s2);color:var(--tx);border:1px solid var(--bd);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:border-color .2s,color .2s}
+.btn-s:hover{border-color:var(--pu);color:var(--pu)}
+
+/* G2 */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:12px}
+@media(max-width:600px){.g2{grid-template-columns:1fr}}
+
+/* TABLE */
+.tbl-w{max-height:150px;overflow-y:auto;margin-top:10px}
+table{width:100%;border-collapse:collapse}
+th{color:var(--mt);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;padding:4px 5px;border-bottom:1px solid var(--bd);text-align:left}
+td{padding:6px 5px;border-bottom:1px solid rgba(40,40,56,.5);font-family:var(--mono);font-size:11px}
+tr:last-child td{border-bottom:none}
+.td-d{color:var(--mt)}
+.td-a{color:var(--gr);text-align:right}
+.btn-x{background:none;border:none;cursor:pointer;color:var(--mt);font-size:12px;padding:1px 5px;border-radius:4px}
+.btn-x:hover{color:var(--rd)}
+
+/* CHANNELS */
+.crows{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
+.crow{display:flex;align-items:center;gap:7px}
+.cname{font-size:11px;color:var(--mt);width:110px;flex-shrink:0}
+.ctrk{flex:1;height:5px;background:var(--s2);border-radius:99px;overflow:hidden}
+.cfill{height:100%;border-radius:99px;transition:width .5s}
+.cpct{font-family:var(--mono);font-size:10px;width:28px;text-align:right;flex-shrink:0}
+.cval{font-family:var(--mono);font-size:10px;color:var(--mt);width:76px;text-align:right;flex-shrink:0}
+.sep{border:none;border-top:1px solid var(--bd);margin:10px 0}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px}
+.cig label{font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px}
+
+/* HIST */
+.hist-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:600px){.hist-kpis{grid-template-columns:1fr 1fr}}
+.hkpi{background:var(--s2);border-radius:8px;padding:10px 12px;border:1px solid var(--bd)}
+.hkpi .hl{font-size:10px;color:var(--mt);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em}
+.hkpi .hv{font-family:var(--mono);font-size:14px;font-weight:700}
+.hkpi .hs{font-size:10px;color:var(--mt);margin-top:3px}
+
+/* AI */
+.ai-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.atab{padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--mt);transition:all .15s}
+.atab.on{background:var(--pu);color:#fff;border-color:var(--pu)}
+.ai-res{margin-top:10px;padding:12px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;font-size:12px;line-height:1.75;white-space:pre-wrap}
+
+/* VENTAS VIEW */
+.ventas-wrap{max-width:480px;margin:0 auto}
+.ventas-card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:22px}
+.ventas-title{font-size:16px;font-weight:600;margin-bottom:4px}
+.ventas-sub{font-size:12px;color:var(--mt);margin-bottom:20px}
+.success-msg{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#4ade80;padding:12px;border-radius:8px;font-size:13px;text-align:center;margin-top:10px}
+
+/* EMPTY */
+.empty{color:var(--mt);font-size:11px;text-align:center;padding:10px 0}
+
+/* TOAST */
+.toast{position:fixed;bottom:16px;right:16px;padding:8px 14px;border-radius:7px;font-size:12px;z-index:9999;opacity:0;transform:translateY(6px);transition:all .25s;pointer-events:none;background:var(--s2);border:1px solid var(--bd)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.tok{border-color:var(--gr);color:var(--gr)}
+.toast.terr{border-color:var(--rd);color:var(--rd)}
+
+/* LOADING */
+.ld-screen{display:flex;align-items:center;justify-content:center;min-height:90vh;flex-direction:column;gap:12px}
+.ld-screen .sp{width:28px;height:28px;border:2px solid var(--bd);border-top-color:var(--am);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld::after{content:'';animation:dots 1.2s infinite}
+@keyframes dots{0%,20%{content:''}40%{content:'.'}60%{content:'..'}80%,100%{content:'...'}}
+
+.foot{text-align:center;font-size:10px;color:var(--mt);padding-top:20px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+// ── CONFIG ──────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyDUSst11XcrROTpfn1I-JkcLjfft1E84Cc",
   authDomain: "nutriciencia-dashboard.firebaseapp.com",
@@ -13,5 +158,546 @@ const firebaseConfig = {
   appId: "1:718763885934:web:30e4ede99bf8e7dbb22d7f"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const PASS_VENTAS = 'ventas26';
+const PASS_PANEL  = 'carlos26';
+
+const MIVA   = 3050000;
+const MNETO  = 2500000;
+const MAY25  = 2539170.61;
+const AVG4   = (1668956.12+1853219.57+2347688.24+2198957.94)/4;
+const CHS    = ['Venta Directa','Revendedores','Supermercados','Distribuidores'];
+const CHCO   = ['#f5a623','#60a5fa','#22c55e','#a78bfa'];
+const WD     = ['2026-05-04','2026-05-05','2026-05-06','2026-05-07','2026-05-08',
+                '2026-05-11','2026-05-12','2026-05-13','2026-05-14','2026-05-15',
+                '2026-05-18','2026-05-19','2026-05-20','2026-05-21','2026-05-22',
+                '2026-05-25','2026-05-26','2026-05-27','2026-05-28','2026-05-29'];
+
+const HIST = {months:["2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04"],data:{Revendedores:{"2025-01":586118.77,"2025-02":775000.5,"2025-03":828987.47,"2025-04":879474.35,"2025-05":887859.85,"2025-06":715786.2,"2025-07":929222.15,"2025-08":779031.6,"2025-09":779667.81,"2025-10":795876.99,"2025-11":709871.93,"2025-12":1262054.18,"2026-01":567256.3,"2026-02":702985.7,"2026-03":689359.6,"2026-04":730030.98},Distribuidores:{"2025-01":419442.8,"2025-02":332284.4,"2025-03":457821,"2025-04":657601,"2025-05":679707,"2025-06":476638,"2025-07":491205.4,"2025-08":542031,"2025-09":572431.2,"2025-10":492714,"2025-11":363955,"2025-12":571803,"2026-01":455648,"2026-02":310876.52,"2026-03":656792,"2026-04":484084},Supermercados:{"2025-01":117263.82,"2025-02":293913.02,"2025-03":274489.89,"2025-04":271812.94,"2025-05":375250.96,"2025-06":222499.03,"2025-07":307990.41,"2025-08":254853.84,"2025-09":201239.42,"2025-10":420960.74,"2025-11":198714.12,"2025-12":251869.91,"2026-01":144325.71,"2026-02":240633.75,"2026-03":271427.35,"2026-04":281627.85},Goland:{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":18483,"2025-06":0,"2025-07":8721.25,"2025-08":0,"2025-09":10370,"2025-10":0,"2025-11":0,"2025-12":0,"2026-01":0,"2026-02":11032.52,"2026-03":12488.89,"2026-04":15182.11},Tsunami:{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":10370,"2025-10":19656,"2025-11":282240,"2025-12":163296,"2026-01":71316.31,"2026-02":109927.48,"2026-03":120960,"2026-04":120960},"Venta Directa":{"2025-01":473890.15,"2025-02":543999.45,"2025-03":570367.2,"2025-04":578433.2,"2025-05":577869.8,"2025-06":602988.18,"2025-07":581689.4,"2025-08":569212.1,"2025-09":651660,"2025-10":602174.8,"2025-11":494989.1,"2025-12":959567.77,"2026-01":430409.8,"2026-02":477763.6,"2026-03":596660.4,"2026-04":567073},TOTAL:{"2025-01":1596715.54,"2025-02":1945197.37,"2025-03":2131665.56,"2025-04":2387321.49,"2025-05":2539170.61,"2025-06":2017911.41,"2025-07":2318828.61,"2025-08":2145128.54,"2025-09":2225738.43,"2025-10":2331382.53,"2025-11":2049770.15,"2025-12":3208590.86,"2026-01":1668956.12,"2026-02":1853219.57,"2026-03":2347688.24,"2026-04":2198957.94}}};
+
+// ── FIREBASE INIT ────────────────────────────────────
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+
+// ── STATE ────────────────────────────────────────────
+let role     = sessionStorage.getItem('nc_role') || null;
+let entries  = {};
+let chWeeks  = {};
+let aiText   = '';
+let aiLoad   = false;
+let aiTab    = 'general';
+
+// ── HELPERS ──────────────────────────────────────────
+const R    = () => document.getElementById('root');
+const fmt  = n  => '$ ' + Math.round(n).toLocaleString('es-UY');
+const fmtN = n  => Math.round(n).toLocaleString('es-UY');
+
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function isFri(s) { return new Date(s+'T12:00:00').getDay() === 5; }
+function dayLabel(s) {
+  const d = new Date(s+'T12:00:00');
+  return ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth()+1);
+}
+function pastDays() { return WD.filter(d => d <= today()); }
+function remDays()  { return WD.filter(d => d > today()); }
+function totalF()   { return Object.values(entries).reduce((s,v) => s+v, 0); }
+function pct()      { return totalF() / MIVA * 100; }
+function expPct()   { return pastDays().length / WD.length * 100; }
+function avgNeed()  { const r = remDays().length; return r > 0 ? Math.max(0,(MIVA-totalF())/r) : 0; }
+function avgAct()   { const d = pastDays().filter(x => entries[x]); return d.length ? totalF()/d.length : 0; }
+function latestCh() {
+  const pf = WD.filter(d => isFri(d) && d <= today()).sort().reverse();
+  for (const f of pf) { if (chWeeks[f]) return { data: chWeeks[f], date: f }; }
+  return null;
+}
+
+function toast(msg, type='tok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── FIREBASE OPS ─────────────────────────────────────
+async function loadData() {
+  try {
+    const snap = await getDocs(collection(db, 'mayo2026'));
+    snap.forEach(d => {
+      const data = d.data();
+      if (d.id.startsWith('e_')) entries[d.id.slice(2)] = data.v;
+      if (d.id.startsWith('c_')) chWeeks[d.id.slice(2)] = data.v;
+    });
+  } catch(e) { console.error('loadData', e); }
+}
+
+async function saveEntry(date, val) {
+  try { await setDoc(doc(db,'mayo2026','e_'+date), { v: val }); } catch(e) { console.error(e); }
+}
+async function delEntry(date) {
+  try { await deleteDoc(doc(db,'mayo2026','e_'+date)); } catch(e) { console.error(e); }
+}
+async function saveCh(fri, data) {
+  try { await setDoc(doc(db,'mayo2026','c_'+fri), { v: data }); } catch(e) { console.error(e); }
+}
+
+// ── MINI BAR CHART ───────────────────────────────────
+function miniBar(days) {
+  const vals = days.map(d => entries[d] || 0);
+  const maxV = Math.max(...vals, 1);
+  const W = 380, H = 44, n = vals.length, gap = 2;
+  const bw = Math.max(5, Math.floor((W - gap*(n-1)) / n));
+  const bars = vals.map((v, i) => {
+    const x = i*(bw+gap), bh = Math.max(2, Math.round(v/maxV*(H-2))), y = H-2-bh;
+    return `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" fill="${v>0?'#f5a623':'#1e1e2a'}" rx="2"/>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;margin-top:9px">${bars.join('')}</svg>`;
+}
+
+function histBar() {
+  const vals = HIST.months.map(m => HIST.data.TOTAL[m]);
+  const maxV = Math.max(...vals, MIVA);
+  const W = 520, H = 60, n = vals.length, gap = 3;
+  const mn = ['E','F','M','A','M','J','J','A','S','O','N','D','E','F','M','A'];
+  const bw = Math.max(5, Math.floor((W - gap*(n-1)) / n));
+  const bars = vals.map((v, i) => {
+    const x = i*(bw+gap), bh = Math.max(2, Math.round(v/maxV*(H-14))), y = H-14-bh;
+    const col = HIST.months[i].startsWith('2026') ? '#60a5fa' : '#374151';
+    return `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" fill="${col}" rx="2"/>
+    <text x="${x+bw/2}" y="${H-1}" text-anchor="middle" fill="#686882" font-size="8">${mn[i]}</text>`;
+  });
+  const metaY = Math.round(H-14 - MIVA/maxV*(H-14));
+  const metaLine = `<line x1="0" y1="${metaY}" x2="${W}" y2="${metaY}" stroke="#f5a623" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="${W-2}" y="${metaY-2}" text-anchor="end" fill="#f5a623" font-size="8">meta</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;margin:9px 0">${bars.join('')}${metaLine}</svg>`;
+}
+
+// ── LOGIN VIEW ───────────────────────────────────────
+function renderLogin(err='') {
+  R().innerHTML = `
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-logo">NutriCiencia</div>
+      <div class="login-sub">Dashboard Comercial · Mayo 2026</div>
+      <label class="login-label">Contraseña de acceso</label>
+      <input class="login-inp" type="password" id="pw" placeholder="········" autocomplete="off">
+      <button class="login-btn" onclick="doLogin()">Ingresar</button>
+      <div class="login-err">${err}</div>
+    </div>
+  </div>`;
+  document.getElementById('pw').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+}
+
+window.doLogin = function() {
+  const pw = document.getElementById('pw').value.trim();
+  if (pw === PASS_PANEL) {
+    role = 'panel';
+    sessionStorage.setItem('nc_role','panel');
+    renderLoading();
+    loadData().then(renderPanel);
+  } else if (pw === PASS_VENTAS) {
+    role = 'ventas';
+    sessionStorage.setItem('nc_role','ventas');
+    renderLoading();
+    loadData().then(renderVentas);
+  } else {
+    renderLogin('Contraseña incorrecta.');
+  }
+};
+
+// ── LOADING ──────────────────────────────────────────
+function renderLoading() {
+  R().innerHTML = `<div class="ld-screen"><div class="sp"></div><div style="font-size:12px;color:var(--mt)">Cargando<span class="ld"></span></div></div>`;
+}
+
+// ── VENTAS VIEW ──────────────────────────────────────
+function renderVentas() {
+  const td = today();
+  const pastF = WD.filter(d => isFri(d) && d <= td);
+  const isTodayFri = isFri(td);
+
+  R().innerHTML = `
+  <div class="ventas-wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bd)">
+      <div>
+        <div style="font-size:10px;color:var(--mt);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">NutriCiencia · Ventas</div>
+        <div style="font-family:var(--mono);font-size:18px">Mayo 2026</div>
+      </div>
+      <button class="logout" onclick="doLogout()">Salir</button>
+    </div>
+
+    <div class="ventas-card">
+      <div class="ventas-title">Cierre de caja del día</div>
+      <div class="ventas-sub">Ingresá la facturación total con IVA</div>
+
+      <div class="fg">
+        <label>Fecha</label>
+        <select class="inp" id="v-date">
+          ${pastDays().map(d => `<option value="${d}"${d===td?' selected':''}>${dayLabel(d)}${d===td?' ← hoy':''}${entries[d]?' ✓':''}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg">
+        <label>Facturación con IVA ($)</label>
+        <input type="number" class="inp" id="v-amt" placeholder="Ej: 185000" min="0">
+      </div>
+      <button class="btn-p" onclick="vAddE()">Registrar cierre</button>
+      <div id="v-msg"></div>
+
+      ${pastF.length ? `
+        <hr class="sep">
+        <div class="ventas-title" style="font-size:14px;margin-bottom:4px">Reporte semanal por canal</div>
+        <div class="ventas-sub">Solo los viernes — ingresá el acumulado de la semana por canal</div>
+        <div class="fg">
+          <label>Viernes</label>
+          <select class="inp" id="v-fri" onchange="vLoadCh()">${pastF.map(d=>`<option value="${d}">${dayLabel(d)}${chWeeks[d]?' ✓':''}</option>`).join('')}</select>
+        </div>
+        <div class="cgrid">
+          ${CHS.map((n,i)=>`<div class="cig"><label>${n}</label><input type="number" class="inp" id="vchi-${i}" placeholder="0" min="0"></div>`).join('')}
+        </div>
+        <button class="btn-s" onclick="vSaveCh()">Guardar desglose por canal</button>
+        <div id="v-ch-msg"></div>
+      ` : ''}
+    </div>
+    <div class="foot">NutriCiencia · Datos guardados en la nube</div>
+  </div>`;
+
+  if (pastF.length) vLoadCh();
+}
+
+window.vAddE = async function() {
+  const date = document.getElementById('v-date')?.value;
+  const amt  = parseFloat(document.getElementById('v-amt')?.value);
+  if (!date || isNaN(amt) || amt <= 0) {
+    document.getElementById('v-msg').innerHTML = `<div style="color:var(--rd);font-size:12px;margin-top:6px">Ingresá un monto válido.</div>`;
+    return;
+  }
+  entries[date] = amt;
+  await saveEntry(date, amt);
+  document.getElementById('v-amt').value = '';
+  document.getElementById('v-msg').innerHTML = `<div class="success-msg">✓ ${dayLabel(date)}: ${fmt(amt)} registrado correctamente.</div>`;
+  setTimeout(() => { if(document.getElementById('v-msg')) document.getElementById('v-msg').innerHTML=''; }, 4000);
+  renderVentas();
+};
+
+window.vLoadCh = function() {
+  const fri = document.getElementById('v-fri')?.value;
+  if (!fri) return;
+  const d = chWeeks[fri] || [0,0,0,0];
+  CHS.forEach((_,i) => { const el = document.getElementById('vchi-'+i); if(el) el.value = d[i] || ''; });
+};
+
+window.vSaveCh = async function() {
+  const fri = document.getElementById('v-fri')?.value;
+  if (!fri) return;
+  const data = CHS.map((_,i) => parseFloat(document.getElementById('vchi-'+i)?.value||0)||0);
+  chWeeks[fri] = data;
+  await saveCh(fri, data);
+  document.getElementById('v-ch-msg').innerHTML = `<div class="success-msg" style="margin-top:8px">✓ Desglose por canal guardado.</div>`;
+  setTimeout(() => { if(document.getElementById('v-ch-msg')) document.getElementById('v-ch-msg').innerHTML=''; }, 4000);
+  renderVentas();
+};
+
+// ── PANEL VIEW ───────────────────────────────────────
+function renderPanel() {
+  const td   = today();
+  const fat  = totalF();
+  const p    = pct();
+  const ep   = expPct();
+  const remD = remDays().length;
+  const falt = Math.max(0, MIVA - fat);
+  const avgN = avgNeed();
+  const avgA = avgAct();
+  const great = p >= ep + 3;
+  const ok    = p >= ep - 3;
+  const fc    = great ? '#22c55e' : ok ? '#f5a623' : '#ef4444';
+  const logD  = pastDays().filter(d => entries[d]).sort((a,b) => b.localeCompare(a));
+  const lch   = latestCh();
+  const chD   = lch?.data;
+  const chTot = chD ? chD.reduce((s,v)=>s+v,0) : 0;
+  const pastF = WD.filter(d => isFri(d) && d <= td);
+  const chartDays = pastDays().filter(d => entries[d]).sort((a,b) => a.localeCompare(b));
+  const pctVsMay25 = fat > 0 ? (fat/MAY25-1)*100 : null;
+
+  R().innerHTML = `
+  <div class="app">
+    <div class="hdr">
+      <div class="hdr-l">
+        <div class="ey">NutriCiencia · Panel Comercial</div>
+        <div class="ti">MAYO 2026</div>
+      </div>
+      <div class="hdr-r">
+        <div class="lb">Meta del mes (c/IVA)</div>
+        <div class="ne">$ ${fmtN(MNETO)} + IVA 22%</div>
+        <div class="to">${fmt(MIVA)}</div>
+        <button class="logout" onclick="doLogout()">Salir</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi" style="--kc:var(--am)">
+        <div class="kl">Facturado</div>
+        <div class="kv">${fmt(fat)}</div>
+        <div class="ks">${p.toFixed(1)}% de la meta</div>
+      </div>
+      <div class="kpi" style="--kc:${falt>0?'var(--rd)':'var(--gr)'}">
+        <div class="kl">Falta</div>
+        <div class="kv" style="font-size:13px">${fmt(falt)}</div>
+        <div class="ks">para cerrar el mes</div>
+      </div>
+      <div class="kpi" style="--kc:var(--bl)">
+        <div class="kl">Días hábiles rest.</div>
+        <div class="kv">${remD}</div>
+        <div class="ks">de ${WD.length} totales</div>
+      </div>
+      <div class="kpi" style="--kc:${avgN>avgA*1.15?'var(--rd)':'var(--gr)'}">
+        <div class="kl">Prom. necesario/día</div>
+        <div class="kv" style="font-size:12px">${fmt(avgN)}</div>
+        <div class="ks">actual: ${fmt(avgA)}</div>
+      </div>
+    </div>
+
+    <!-- PROGRESO -->
+    <div class="card">
+      <div class="prog-wrap">
+        <div class="prog-top">
+          <span class="prog-lb">Avance vs meta — ritmo esperado hoy: ${ep.toFixed(0)}%</span>
+          <span class="prog-pct" style="color:${fc}">${p.toFixed(1)}%</span>
+        </div>
+        <div class="track">
+          <div class="track-fill" style="width:${Math.min(100,p)}%;background:${fc}"></div>
+          <div class="track-pace" style="left:${Math.min(100,ep)}%"></div>
+        </div>
+        ${great
+          ? `<div class="alrt ok">✓ Ritmo por encima del esperado. Vas bien.</div>`
+          : ok
+          ? `<div class="alrt wn">○ Ritmo ajustado. Necesitás ${fmt(avgN)}/día en los ${remD} días hábiles restantes.</div>`
+          : `<div class="alrt bd">⚠ ${(ep-p).toFixed(1)}pp por debajo del ritmo esperado. Se necesita acción comercial.</div>`}
+      </div>
+    </div>
+
+    <!-- INGRESO + CANALES -->
+    <div class="g2">
+      <div class="card" style="margin-bottom:0">
+        <div class="pt"><span class="d"></span>Facturación diaria</div>
+        <div class="fg">
+          <label>Fecha</label>
+          <select class="inp" id="sel-d">
+            ${pastDays().map(d=>`<option value="${d}"${d===td?' selected':''}>${dayLabel(d)}${d===td?' ← hoy':''}${entries[d]?' ✓':''}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fg">
+          <label>Cierre de caja (con IVA)</label>
+          <input type="number" class="inp" id="inp-a" placeholder="Ej: 185000" min="0">
+        </div>
+        <button class="btn-p" onclick="pAddE()">Registrar</button>
+        ${chartDays.length > 1 ? miniBar(chartDays) : ''}
+        ${logD.length ? `
+          <div class="tbl-w">
+            <table><thead><tr><th>Día</th><th style="text-align:right">Monto</th><th></th></tr></thead>
+            <tbody>${logD.map(d=>`<tr>
+              <td class="td-d">${dayLabel(d)}</td>
+              <td class="td-a">${fmt(entries[d])}</td>
+              <td style="text-align:center"><button class="btn-x" onclick="pDelE('${d}')">✕</button></td>
+            </tr>`).join('')}</tbody></table>
+          </div>` : `<div class="empty">Sin registros aún</div>`}
+      </div>
+
+      <div class="card" style="margin-bottom:0">
+        <div class="pt"><span class="d" style="--dc:var(--bl)"></span>Canales de venta</div>
+        ${chD && chTot > 0 ? `
+          <div class="crows">
+            ${CHS.map((name,i) => {
+              const v = chD[i]||0, cp = chTot > 0 ? (v/chTot)*100 : 0;
+              return `<div class="crow">
+                <div class="cname">${name}</div>
+                <div class="ctrk"><div class="cfill" style="width:${cp}%;background:${CHCO[i]}"></div></div>
+                <div class="cpct">${cp.toFixed(0)}%</div>
+                <div class="cval">${fmt(v)}</div>
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="font-size:10px;color:var(--mt)">Último reporte: ${dayLabel(lch.date)}</div>
+        ` : `<div class="empty">Sin datos de canales aún.</div>`}
+        <hr class="sep">
+        <div class="pt" style="margin-bottom:8px"><span class="d" style="--dc:var(--gr)"></span>Reporte semanal (viernes)</div>
+        ${pastF.length ? `
+          <div class="fg">
+            <label>Viernes</label>
+            <select class="inp" id="sel-f" onchange="pLoadCh()">${pastF.map(d=>`<option value="${d}">${dayLabel(d)}${chWeeks[d]?' ✓':''}</option>`).join('')}</select>
+          </div>
+          <div class="cgrid">
+            ${CHS.map((n,i)=>`<div class="cig"><label>${n.split(' ')[0]}</label><input type="number" class="inp" id="chi-${i}" placeholder="0" min="0" style="font-size:11px;padding:6px"></div>`).join('')}
+          </div>
+          <button class="btn-s" onclick="pSaveCh()">Guardar desglose semanal</button>
+        ` : `<div style="font-size:11px;color:var(--mt)">Disponible a partir del viernes 8/5.</div>`}
+      </div>
+    </div>
+
+    <!-- HISTORICO -->
+    <div class="card">
+      <div class="pt"><span class="d" style="--dc:var(--te)"></span>Contexto histórico</div>
+      <div class="hist-kpis">
+        <div class="hkpi">
+          <div class="hl">Mayo 2025 (real)</div>
+          <div class="hv">${fmt(MAY25)}</div>
+          <div class="hs">mismo mes año anterior</div>
+        </div>
+        <div class="hkpi">
+          <div class="hl">Meta vs May'25</div>
+          <div class="hv" style="color:var(--am)">+${((MIVA/MAY25-1)*100).toFixed(1)}%</div>
+          <div class="hs">crecimiento requerido</div>
+        </div>
+        <div class="hkpi">
+          <div class="hl">Prom. Ene–Abr 2026</div>
+          <div class="hv">${fmt(AVG4)}</div>
+          <div class="hs">últimos 4 meses</div>
+        </div>
+        <div class="hkpi">
+          <div class="hl">Acum. vs May'25</div>
+          <div class="hv" style="color:${pctVsMay25!==null&&pctVsMay25>=0?'var(--gr)':'var(--rd)'}">
+            ${pctVsMay25!==null ? (pctVsMay25>=0?'+':'')+pctVsMay25.toFixed(1)+'%' : '–'}
+          </div>
+          <div class="hs">al día de hoy</div>
+        </div>
+      </div>
+      ${histBar()}
+      <div style="display:flex;gap:14px;margin-top:3px">
+        <span style="font-size:10px;color:var(--mt);display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;background:#374151;border-radius:2px;display:inline-block"></span>2025</span>
+        <span style="font-size:10px;color:var(--mt);display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;background:#60a5fa;border-radius:2px;display:inline-block"></span>2026</span>
+        <span style="font-size:10px;color:var(--mt);display:flex;align-items:center;gap:5px"><span style="width:14px;height:1px;background:#f5a623;display:inline-block;border-top:2px dashed #f5a623"></span>meta mayo</span>
+      </div>
+    </div>
+
+    <!-- IA -->
+    <div class="card">
+      <div class="pt"><span class="d" style="--dc:var(--pu)"></span>Análisis estratégico IA</div>
+      <div class="ai-tabs">
+        <button class="atab ${aiTab==='general'?'on':''}" onclick="setTab('general')">Situación general</button>
+        <button class="atab ${aiTab==='canales'?'on':''}" onclick="setTab('canales')">Mix de canales</button>
+        <button class="atab ${aiTab==='tendencia'?'on':''}" onclick="setTab('tendencia')">Tendencia histórica</button>
+      </div>
+      <button class="btn-s" style="width:auto;padding:7px 16px;margin-bottom:4px" onclick="runAI()" ${fat===0?'disabled':''}>
+        ${aiLoad ? '<span class="ld">Analizando</span>' : '⚡ Obtener análisis'}
+      </button>
+      ${fat===0 ? '<span style="font-size:11px;color:var(--mt);margin-left:8px">Registrá al menos un día para activar</span>' : ''}
+      ${aiText ? `<div class="ai-res">${aiText}</div>` : ''}
+    </div>
+
+    <div class="foot">NutriCiencia · Dashboard Comercial · Mayo 2026 · <span style="color:var(--gr)">● En línea</span></div>
+  </div>`;
+
+  const sf = document.getElementById('sel-f');
+  if (sf) { pLoadCh(); sf.onchange = pLoadCh; }
+}
+
+// Panel actions
+window.pAddE = async function() {
+  const date = document.getElementById('sel-d')?.value;
+  const amt  = parseFloat(document.getElementById('inp-a')?.value);
+  if (!date || isNaN(amt) || amt <= 0) { toast('Ingresá un monto válido','terr'); return; }
+  entries[date] = amt;
+  await saveEntry(date, amt);
+  toast('✓ ' + dayLabel(date) + ': ' + fmt(amt));
+  document.getElementById('inp-a').value = '';
+  renderPanel();
+};
+
+window.pDelE = async function(date) {
+  delete entries[date];
+  await delEntry(date);
+  toast('Registro eliminado','terr');
+  renderPanel();
+};
+
+window.pLoadCh = function() {
+  const fri = document.getElementById('sel-f')?.value;
+  if (!fri) return;
+  const d = chWeeks[fri] || [0,0,0,0];
+  CHS.forEach((_,i) => { const el = document.getElementById('chi-'+i); if(el) el.value = d[i] || ''; });
+};
+
+window.pSaveCh = async function() {
+  const fri = document.getElementById('sel-f')?.value;
+  if (!fri) return;
+  const data = CHS.map((_,i) => parseFloat(document.getElementById('chi-'+i)?.value||0)||0);
+  chWeeks[fri] = data;
+  await saveCh(fri, data);
+  toast('✓ Desglose por canal guardado');
+  renderPanel();s
+};
+
+window.setTab = function(t) { aiTab = t; aiText = ''; renderPanel(); };
+
+// ── AI ───────────────────────────────────────────────
+function buildPrompt() {
+  const fat  = totalF();
+  const lch  = latestCh(), chD = lch?.data, chTot = chD ? chD.reduce((s,v)=>s+v,0) : 0;
+  const chInfo = chD && chTot > 0 ? CHS.map((n,i)=>`  ${n}: ${fmt(chD[i]||0)} (${Math.round((chD[i]||0)/chTot*100)}%)`).join('\n') : '  Sin datos de canales';
+  const histTot = HIST.months.map(m=>`  ${m}: ${fmt(HIST.data.TOTAL[m])}`).join('\n');
+  const histCh  = Object.entries(HIST.data).filter(([k])=>k!=='TOTAL').map(([c,ms])=>`  ${c}: ${HIST.months.map(m=>fmt(ms[m]||0)).join(' | ')}`).join('\n');
+
+  const base = `Sos consultor comercial especializado en empresas de alimentos en Uruguay. Analizá NutriCiencia, fabricante de productos sin gluten (premezclas, alfajores marca propia y marca blanca).
+
+MAYO 2026:
+• Meta (IVA incluido): ${fmt(MIVA)}
+• Facturado: ${fmt(fat)} (${pct().toFixed(1)}%)
+• Ritmo esperado: ${expPct().toFixed(1)}% — brecha: ${(pct()-expPct()).toFixed(1)}pp
+• Días hábiles restantes: ${remDays().length} de ${WD.length}
+• Prom. diario necesario: ${fmt(avgNeed())} — actual: ${fmt(avgAct())}
+
+CANALES (último reporte semanal):
+${chInfo}
+
+HISTÓRICO TOTAL MENSUAL:
+${histTot}
+
+HISTÓRICO POR CANAL (meses: ${HIST.months.join(' | ')}):
+${histCh}
+
+Mayo 2025: ${fmt(MAY25)} | Prom Ene-Abr 2026: ${fmt(AVG4)}`;
+
+  if (aiTab==='general')   return base + `\n\nAnalizá situación vs meta, vs mayo 2025 y promedio reciente. 3 acciones priorizadas. Español rioplatense. Máximo 220 palabras.`;
+  if (aiTab==='canales')   return base + `\n\nAnalizá mix de canales vs histórico mayo 2025. Canal rezagado, mayor palanca, 3 recomendaciones por canal. Español rioplatense. Máximo 220 palabras.`;
+  return base + `\n\nAnalizá tendencia 2025-2026, estacionalidad, trayectoria por canal, proyección del cierre al ritmo actual. 3 conclusiones estratégicas. Español rioplatense. Máximo 220 palabras.`;
+}
+
+window.runAI = async function() {
+  if (totalF()===0 || aiLoad) return;
+  aiLoad = true; aiText = ''; renderPanel();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, messages: [{ role: 'user', content: buildPrompt() }] })
+    });
+    const data = await res.json();
+    aiText = data.content?.[0]?.text || 'Sin respuesta.';
+  } catch(e) {
+    aiText = 'Error de conexión con el análisis.';
+  }
+  aiLoad = false; renderPanel();
+};
+
+// ── LOGOUT ───────────────────────────────────────────
+window.doLogout = function() {
+  role = null;
+  sessionStorage.removeItem('nc_role');
+  entries = {}; chWeeks = {}; aiText = '';
+  renderLogin();
+};
+
+// ── INIT ─────────────────────────────────────────────
+if (role === 'panel') {
+  renderLoading();
+  loadData().then(renderPanel);
+} else if (role === 'ventas') {
+  renderLoading();
+  loadData().then(renderVentas);
+} else {
+  renderLogin();
+}
+</script>
+</body>
+</html>
